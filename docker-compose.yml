@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: usto
+      POSTGRES_PASSWORD: usto
+      POSTGRES_DB: usto
+    ports:
+      - "5432:5432"
+    volumes:
+      - usto_pg:/var/lib/postgresql/data
+
+volumes:
+  usto_pg:

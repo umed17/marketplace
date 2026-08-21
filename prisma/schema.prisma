@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+enum Role {
+  customer
+  master
+  admin
+}
+
+enum OrderStatus {
+  draft
+  published
+  receiving_offers
+  master_selected
+  in_progress
+  completed
+  cancelled
+}
+
+enum OfferStatus {
+  pending
+  accepted
+  rejected
+  closed
+}
+
+enum ReportStatus {
+  pending
+  reviewed
+  resolved
+  dismissed
+}
+
+enum ReviewStatus {
+  pending
+  approved
+  hidden
+}
+
+enum MediaType {
+  image
+  video
+}
+
+model User {
+  id           String    @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String    @unique
+  phone        String    @unique
+  passwordHash String
+  role         Role
+  avatar       String?
+  isVerified   Boolean   @default(false)
+  isBlocked    Boolean   @default(false)
+  lastSeenAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  masterProfile     MasterProfile?
+  customerProfile   CustomerProfile?
+  orders            Order[]              @relation("CustomerOrders")
+  selectedOrders    Order[]              @relation("SelectedMasterOrders")
+  offers            OrderOffer[]
+  sentMessages      Message[]
+  reviewsGiven      Review[]             @relation("CustomerReviews")
+  reviewsReceived   Review[]             @relation("MasterReviews")
+  favorites         Favorite[]           @relation("CustomerFavorites")
+  favoritedBy       Favorite[]           @relation("MasterFavorites")
+  notifications     Notification[]
+  reportsFiled      Report[]             @relation("Reporter")
+  reportsAgainst    Report[]             @relation("ReportedUser")
+  conversationsAsCustomer Conversation[] @relation("CustomerConversations")
+  conversationsAsMaster   Conversation[] @relation("MasterConversations")
+}
+
+model CustomerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  city      String?
+  district  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MasterProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  displayName     String?
+  categoryId      String?
+  city            String?
+  district        String?
+  experience      Int?
+  description     String?
+  priceFrom       Int?
+  workingHours    String?
+  isVerified      Boolean  @default(false)
+  ratingAverage   Float    @default(0)
+  completedOrders Int      @default(0)
+  isOnline        Boolean  @default(false)
+  setupCompleted  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category? @relation(fields: [categoryId], references: [id])
+  services   Service[]
+  portfolio  PortfolioItem[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  icon        String   @default("🔧")
+  description String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  masters MasterProfile[]
+  orders  Order[]
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  masterId    String
+  name        String
+  description String?
+  priceFrom   Int?
+
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+}
+
+model PortfolioItem {
+  id          String   @id @default(cuid())
+  masterId    String
+  imageUrl    String
+  description String?
+  createdAt   DateTime @default(now())
+
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  customerId       String
+  categoryId       String
+  selectedMasterId String?
+  title            String
+  description      String
+  city             String
+  district         String?
+  address          String?
+  budgetFrom       Int?
+  budgetTo         Int?
+  preferredTime    String?
+  priority         String      @default("normal")
+  status           OrderStatus @default(published)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  completedAt      DateTime?
+
+  customer       User           @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
+  selectedMaster User?          @relation("SelectedMasterOrders", fields: [selectedMasterId], references: [id])
+  category       Category       @relation(fields: [categoryId], references: [id])
+  offers         OrderOffer[]
+  media          OrderMedia[]
+  conversation   Conversation?
+  review         Review?
+}
+
+model OrderMedia {
+  id        String    @id @default(cuid())
+  orderId   String
+  url       String
+  type      MediaType @default(image)
+  createdAt DateTime  @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model OrderOffer {
+  id          String      @id @default(cuid())
+  orderId     String
+  masterId    String
+  price       Int
+  message     String
+  arrivalTime String?
+  finishTime  String?
+  status      OfferStatus @default(pending)
+  createdAt   DateTime    @default(now())
+
+  order  Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  master User  @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, masterId])
+}
+
+model Conversation {
+  id         String   @id @default(cuid())
+  orderId    String   @unique
+  customerId String
+  masterId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customer User      @relation("CustomerConversations", fields: [customerId], references: [id], onDelete: Cascade)
+  master   User      @relation("MasterConversations", fields: [masterId], references: [id], onDelete: Cascade)
+  messages Message[]
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  body           String
+  attachmentUrl  String?
+  isRead         Boolean  @default(false)
+  hasContactHint Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id         String       @id @default(cuid())
+  orderId    String       @unique
+  customerId String
+  masterId   String
+  rating     Int
+  comment    String
+  status     ReviewStatus @default(approved)
+  createdAt  DateTime     @default(now())
+
+  order    Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customer User  @relation("CustomerReviews", fields: [customerId], references: [id], onDelete: Cascade)
+  master   User  @relation("MasterReviews", fields: [masterId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  customerId String
+  masterId   String
+  createdAt  DateTime @default(now())
+
+  customer User @relation("CustomerFavorites", fields: [customerId], references: [id], onDelete: Cascade)
+  master   User @relation("MasterFavorites", fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, masterId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id           String       @id @default(cuid())
+  reporterId   String
+  targetUserId String?
+  targetType   String
+  targetId     String?
+  reason       String
+  status       ReportStatus @default(pending)
+  createdAt    DateTime     @default(now())
+
+  reporter   User  @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetUser User? @relation("ReportedUser", fields: [targetUserId], references: [id])
+}
+
+model PlatformSetting {
+  key   String @id
+  value String
+}
