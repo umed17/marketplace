@@ -5,8 +5,10 @@ import Link from "next/link";
 import { MasterCard, Empty, type MasterCardData } from "@/components/MasterCard";
 import { IconHeart } from "@/components/icons";
 import { PageHeader } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 export default function FavoritesPage() {
+  const { tr } = useLocale();
   const [masters, setMasters] = useState<MasterCardData[]>([]);
   useEffect(() => {
     fetch("/api/favorites")
@@ -51,10 +53,10 @@ export default function FavoritesPage() {
         title={
           <span className="inline-flex items-center gap-2">
             <IconHeart size={28} className="text-[var(--color-accent)]" aria-hidden="true" />
-            Favorites
+            {tr("favorites")}
           </span>
         }
-        subtitle="Устоҳои дӯстдоштаи шумо"
+        subtitle={tr("favoritesSubtitle")}
       />
       <div className="grid gap-4 md:grid-cols-2">
         {masters.length === 0 ? (

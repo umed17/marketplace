@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/MasterCard";
 import { IconClose } from "@/components/icons";
 import { CardTitle, PageHeader, PageLoading } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 type User = {
   id: string;
@@ -24,6 +25,7 @@ type User = {
 };
 
 export default function ProfilePage() {
+  const { tr } = useLocale();
   const [user, setUser] = useState<User | null>(null);
   const [desc, setDesc] = useState("");
 
@@ -77,7 +79,7 @@ export default function ProfilePage() {
 
   return (
     <div className="page-wrap space-y-6 py-8">
-      <PageHeader title="Profile" subtitle="Маълумоти шахсӣ ва portfolio" />
+      <PageHeader title={tr("profile")} subtitle="Маълумоти шахсӣ ва корҳои анҷомшуда" />
       <section className="card p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <Avatar name={name} src={user.avatar} size={80} />
@@ -106,7 +108,7 @@ export default function ProfilePage() {
 
       {user.role === "master" && (
         <section className="card p-6">
-          <CardTitle>Portfolio</CardTitle>
+          <CardTitle>{tr("portfolio")}</CardTitle>
           <form onSubmit={addPortfolio} className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
             <input className="input" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Тавсифи кор" />
             <input className="input" type="file" name="file" accept="image/*" />

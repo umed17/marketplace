@@ -7,7 +7,7 @@ export function Footer() {
   const { tr } = useLocale();
 
   return (
-    <footer className="mt-16 border-t border-[var(--color-border)] bg-white py-6 text-sm text-[var(--color-muted-foreground)] md:py-10">
+    <footer className="mt-8 border-t border-[var(--color-border)] bg-white py-5 text-sm text-[var(--color-muted-foreground)] md:mt-16 md:py-10">
       <div className="page-wrap grid gap-8 md:grid-cols-[1.2fr_1fr_1fr]">
         <div>
           <div className="font-display text-xl font-bold text-[var(--color-primary)]">{tr("brandName")}</div>

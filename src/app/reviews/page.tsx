@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Empty } from "@/components/MasterCard";
 import { IconStarFill } from "@/components/icons";
 import { PageHeader } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 type Review = {
   id: string;
@@ -16,6 +17,7 @@ type Review = {
 };
 
 export default function ReviewsPage() {
+  const { tr } = useLocale();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [role, setRole] = useState("");
 
@@ -50,7 +52,10 @@ export default function ReviewsPage() {
 
   return (
     <div className="page-wrap py-8">
-      <PageHeader title="Reviews" subtitle={role === "master" ? "Отзывҳои муштариён" : "Отзывҳои шумо"} />
+      <PageHeader
+        title={tr("reviewsSection")}
+        subtitle={role === "master" ? tr("reviewsMasterSubtitle") : tr("reviewsCustomerSubtitle")}
+      />
       <div className="grid gap-3">
         {reviews.length === 0 ? (
           <Empty
