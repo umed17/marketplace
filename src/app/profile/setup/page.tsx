@@ -6,6 +6,7 @@ import { CITIES, DISTRICTS } from "@/lib/constants";
 import { PageHeader } from "@/components/PageShell";
 
 type Category = { id: string; name: string };
+type PriceType = "fixed" | "negotiable";
 
 export default function MasterSetupPage() {
   const router = useRouter();
@@ -13,7 +14,8 @@ export default function MasterSetupPage() {
   const [city, setCity] = useState("Душанбе");
   const [error, setError] = useState("");
   const [userId, setUserId] = useState("");
-  const [priceNegotiable, setPriceNegotiable] = useState(false);
+  const [priceType, setPriceType] = useState<PriceType>("fixed");
+  const [priceFrom, setPriceFrom] = useState("");
 
   useEffect(() => {
     fetch("/api/categories")
@@ -27,9 +29,27 @@ export default function MasterSetupPage() {
       });
   }, [router]);
 
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/masters/${userId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const master = d?.master;
+        if (!master) return;
+        if (master.priceFrom == null) {
+          setPriceType("negotiable");
+          setPriceFrom("");
+        } else {
+          setPriceType("fixed");
+          setPriceFrom(String(master.priceFrom));
+        }
+      });
+  }, [userId]);
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+    const priceNegotiable = priceType === "negotiable";
     const res = await fetch(`/api/masters/${userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -40,7 +60,7 @@ export default function MasterSetupPage() {
         experience: Number(form.get("experience")),
         description: form.get("description"),
         priceNegotiable,
-        priceFrom: priceNegotiable ? null : Number(form.get("priceFrom")),
+        priceFrom: priceNegotiable ? null : Number(priceFrom || form.get("priceFrom")),
         workingHours: form.get("workingHours"),
         phone: form.get("phone"),
       }),
@@ -78,22 +98,84 @@ export default function MasterSetupPage() {
         </select>
         <input className="input" name="experience" type="number" placeholder="Таҷриба (сол)" required />
         <textarea className="textarea" name="description" placeholder="Тавсиф дар бораи худ" required />
-        <div className="space-y-2">
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
-            <input
-              type="checkbox"
-              checked={priceNegotiable}
-              onChange={(e) => setPriceNegotiable(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--color-border)]"
-            />
-            Шартномavӣ
-          </label>
-          {!priceNegotiable && (
-            <input className="input" name="priceFrom" type="number" min={0} placeholder="Нарх аз ... сомонӣ" required />
+
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold text-[var(--color-ink)]">Нархи хизмат</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label
+              className={`cursor-pointer rounded-xl border p-4 transition-colors ${
+                priceType === "fixed"
+                  ? "border-[var(--color-primary)] bg-[var(--color-muted-bg)]"
+                  : "border-[var(--color-border)] hover:border-[var(--color-secondary)]"
+              }`}
+            >
+              <span className="flex items-start gap-3">
+                <input
+                  type="radio"
+                  name="priceType"
+                  value="fixed"
+                  checked={priceType === "fixed"}
+                  onChange={() => setPriceType("fixed")}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="block font-semibold">Дар сомонӣ</span>
+                  <span className="mt-1 block text-sm text-[var(--color-muted-foreground)]">
+                    Нархи корро бо сомонӣ нависед, мисли дигар платформаҳо
+                  </span>
+                </span>
+              </span>
+            </label>
+
+            <label
+              className={`cursor-pointer rounded-xl border p-4 transition-colors ${
+                priceType === "negotiable"
+                  ? "border-[var(--color-primary)] bg-[var(--color-muted-bg)]"
+                  : "border-[var(--color-border)] hover:border-[var(--color-secondary)]"
+              }`}
+            >
+              <span className="flex items-start gap-3">
+                <input
+                  type="radio"
+                  name="priceType"
+                  value="negotiable"
+                  checked={priceType === "negotiable"}
+                  onChange={() => setPriceType("negotiable")}
+                  className="mt-1"
+                />
+                <span>
+                  <span className="block font-semibold">Шартномavӣ</span>
+                  <span className="mt-1 block text-sm text-[var(--color-muted-foreground)]">
+                    Нарх бо муштарӣ баъд аз мубоҳиса муайян мешавад
+                  </span>
+                </span>
+              </span>
+            </label>
+          </div>
+
+          {priceType === "fixed" && (
+            <div className="flex items-center gap-2">
+              <input
+                className="input flex-1"
+                name="priceFrom"
+                type="number"
+                min={0}
+                value={priceFrom}
+                onChange={(e) => setPriceFrom(e.target.value)}
+                placeholder="Масалан: 150"
+                required
+              />
+              <span className="shrink-0 text-sm font-semibold text-[var(--color-muted-foreground)]">сомонӣ</span>
+            </div>
           )}
-        </div>
+        </fieldset>
+
         <input className="input" name="workingHours" placeholder="Соатҳои корӣ, масалан 08:00–20:00" />
-        {error && <p className="alert-error" role="alert">{error}</p>}
+        {error && (
+          <p className="alert-error" role="alert">
+            {error}
+          </p>
+        )}
         <button className="btn btn-primary w-full">Профилро захира кардан</button>
       </form>
     </div>

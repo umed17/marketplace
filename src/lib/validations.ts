@@ -37,7 +37,7 @@ export const masterProfileSchema = z
     services: z.array(z.string().trim().min(2)).optional(),
   })
   .refine((data) => data.priceNegotiable || (data.priceFrom != null && data.priceFrom >= 0), {
-    message: "Нархро ворид кунед ё «Шартномavӣ»-ро интихоб кунед",
+    message: "Нархро бо сомонӣ нависед ё «Шартномavӣ»-ро интихоб кунед",
     path: ["priceFrom"],
   });
 
