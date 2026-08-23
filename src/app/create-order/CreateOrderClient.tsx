@@ -2,12 +2,14 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CITIES, DISTRICTS } from "@/lib/constants";
+import { CITIES, DISTRICTS, displayCategoryName } from "@/lib/constants";
 import { PageHeader } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
-type Category = { id: string; name: string };
+type Category = { id: string; name: string; slug: string };
 
 export default function CreateOrderPage() {
+  const { locale } = useLocale();
   const router = useRouter();
   const sp = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -85,7 +87,7 @@ export default function CreateOrderPage() {
           <option value="">Категория</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {displayCategoryName(c.slug, c.name, locale)}
             </option>
           ))}
         </select>

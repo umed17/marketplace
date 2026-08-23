@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { displayCategoryName, publicCategoryWhere } from "@/lib/constants";
+import { ensureCategories } from "@/lib/ensure-categories";
 
 export async function GET(req: NextRequest) {
+  await ensureCategories();
   const withCounts = req.nextUrl.searchParams.get("counts") === "1";
 
   const rows = await prisma.category.findMany({
