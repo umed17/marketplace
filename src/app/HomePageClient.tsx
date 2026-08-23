@@ -158,7 +158,7 @@ export function HomePageClient({ categories, masters, stats }: Props) {
                   </span>
                 </p>
                 <p className="mt-3 font-bold text-[var(--color-accent)]">
-                  {tr("priceFromSomoni", { price: m.priceFrom ?? 0 })}
+                  {m.priceFrom == null ? tr("priceNegotiable") : tr("priceFromSomoni", { price: m.priceFrom })}
                 </p>
               </Link>
             ))}

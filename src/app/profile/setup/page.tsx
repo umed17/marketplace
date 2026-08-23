@@ -13,6 +13,7 @@ export default function MasterSetupPage() {
   const [city, setCity] = useState("Душанбе");
   const [error, setError] = useState("");
   const [userId, setUserId] = useState("");
+  const [priceNegotiable, setPriceNegotiable] = useState(false);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -38,7 +39,8 @@ export default function MasterSetupPage() {
         categoryId: form.get("categoryId"),
         experience: Number(form.get("experience")),
         description: form.get("description"),
-        priceFrom: Number(form.get("priceFrom")),
+        priceNegotiable,
+        priceFrom: priceNegotiable ? null : Number(form.get("priceFrom")),
         workingHours: form.get("workingHours"),
         phone: form.get("phone"),
       }),
@@ -76,7 +78,20 @@ export default function MasterSetupPage() {
         </select>
         <input className="input" name="experience" type="number" placeholder="Таҷриба (сол)" required />
         <textarea className="textarea" name="description" placeholder="Тавсиф дар бораи худ" required />
-        <input className="input" name="priceFrom" type="number" placeholder="Нарх аз ... сомонӣ" required />
+        <div className="space-y-2">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={priceNegotiable}
+              onChange={(e) => setPriceNegotiable(e.target.checked)}
+              className="h-4 w-4 rounded border-[var(--color-border)]"
+            />
+            Шартномavӣ
+          </label>
+          {!priceNegotiable && (
+            <input className="input" name="priceFrom" type="number" min={0} placeholder="Нарх аз ... сомонӣ" required />
+          )}
+        </div>
         <input className="input" name="workingHours" placeholder="Соатҳои корӣ, масалан 08:00–20:00" />
         {error && <p className="alert-error" role="alert">{error}</p>}
         <button className="btn btn-primary w-full">Профилро захира кардан</button>

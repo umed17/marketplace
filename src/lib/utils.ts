@@ -12,6 +12,11 @@ export function formatSomoni(value?: number | null) {
   return `${value.toLocaleString("tg-TJ")} сомонӣ`;
 }
 
+export function formatMasterPrice(value?: number | null) {
+  if (value == null) return "Шартномavӣ";
+  return `Аз ${formatSomoni(value)}`;
+}
+
 export function formatDate(value: string | Date) {
   const date = typeof value === "string" ? new Date(value) : value;
   return date.toLocaleString("tg-TJ", {

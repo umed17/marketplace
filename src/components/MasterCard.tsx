@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { formatSomoni } from "@/lib/utils";
+import { formatMasterPrice } from "@/lib/utils";
 import { IconBadgeCheck, IconCheck, IconMapPin, IconStarFill, InlineCatIcon } from "@/components/icons";
 
 export { StatusBadge } from "@/components/StatusBadge";
@@ -77,7 +77,7 @@ export function MasterCard({ master }: { master: MasterCardData }) {
         </div>
       </div>
       <div className="mt-auto flex items-center justify-between gap-3 border-t border-[var(--color-border)] pt-4">
-        <div className="font-bold text-[var(--color-accent)]">Аз {formatSomoni(master.priceFrom)}</div>
+        <div className="font-bold text-[var(--color-accent)]">{formatMasterPrice(master.priceFrom)}</div>
         <Link href={`/masters/${master.id}`} className="btn btn-primary text-sm">
           Профилро дидан
         </Link>

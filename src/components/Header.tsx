@@ -41,14 +41,24 @@ export function Header() {
     router.refresh();
   }
 
+  const authedLinks =
+    user?.role === "master"
+      ? [
+          { href: "/orders", label: tr("orders") },
+          { href: "/dashboard", label: tr("dashboard") },
+          { href: "/chat", label: tr("chat") },
+          { href: "/profile/setup", label: tr("profile") },
+        ]
+      : [
+          { href: "/masters", label: tr("findMasters") },
+          { href: "/orders", label: tr("orders") },
+          { href: "/dashboard", label: tr("dashboard") },
+          { href: "/chat", label: tr("chat") },
+          { href: "/profile", label: tr("profile") },
+        ];
+
   const links = user
-    ? [
-        { href: "/masters", label: tr("findMasters") },
-        { href: "/orders", label: tr("orders") },
-        { href: "/dashboard", label: tr("dashboard") },
-        { href: "/chat", label: tr("chat") },
-        { href: "/profile", label: tr("profile") },
-      ]
+    ? authedLinks
     : [
         { href: "/masters", label: tr("findMasters") },
         { href: "/orders", label: tr("orders") },

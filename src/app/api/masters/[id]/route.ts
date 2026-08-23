@@ -82,6 +82,8 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       data.displayName?.trim() ||
       `${data.firstName || me.firstName} ${data.lastName || me.lastName}`.trim();
 
+    const priceFrom = data.priceNegotiable ? null : data.priceFrom ?? null;
+
     if (data.phone && data.phone !== me.phone) {
       const phone = normalizePhone(data.phone);
       const taken = await prisma.user.findFirst({ where: { phone, NOT: { id: me.id } } });
@@ -108,7 +110,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
         categoryId: data.categoryId,
         experience: data.experience,
         description: data.description,
-        priceFrom: data.priceFrom,
+        priceFrom,
         workingHours: data.workingHours,
         setupCompleted: true,
       },
@@ -120,7 +122,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
         categoryId: data.categoryId,
         experience: data.experience,
         description: data.description,
-        priceFrom: data.priceFrom,
+        priceFrom,
         workingHours: data.workingHours,
         setupCompleted: true,
       },

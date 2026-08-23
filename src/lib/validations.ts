@@ -20,20 +20,26 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Паролро нависед"),
 });
 
-export const masterProfileSchema = z.object({
-  displayName: z.string().trim().min(2).optional(),
-  firstName: z.string().trim().min(2).optional(),
-  lastName: z.string().trim().min(2).optional(),
-  city: z.string().trim().min(2),
-  district: z.string().trim().optional(),
-  categoryId: z.string().min(1, "Категорияро интихоб кунед"),
-  experience: z.coerce.number().int().min(0).max(60),
-  description: z.string().trim().min(20, "Тавсиф ҳадди ақал 20 аломат"),
-  priceFrom: z.coerce.number().int().min(0),
-  workingHours: z.string().trim().optional(),
-  phone: z.string().trim().optional(),
-  services: z.array(z.string().trim().min(2)).optional(),
-});
+export const masterProfileSchema = z
+  .object({
+    displayName: z.string().trim().min(2).optional(),
+    firstName: z.string().trim().min(2).optional(),
+    lastName: z.string().trim().min(2).optional(),
+    city: z.string().trim().min(2),
+    district: z.string().trim().optional(),
+    categoryId: z.string().min(1, "Категорияро интихоб кунед"),
+    experience: z.coerce.number().int().min(0).max(60),
+    description: z.string().trim().min(20, "Тавсиф ҳадди ақал 20 аломат"),
+    priceFrom: z.coerce.number().int().min(0).optional().nullable(),
+    priceNegotiable: z.boolean().optional(),
+    workingHours: z.string().trim().optional(),
+    phone: z.string().trim().optional(),
+    services: z.array(z.string().trim().min(2)).optional(),
+  })
+  .refine((data) => data.priceNegotiable || (data.priceFrom != null && data.priceFrom >= 0), {
+    message: "Нархро ворид кунед ё «Шартномavӣ»-ро интихоб кунед",
+    path: ["priceFrom"],
+  });
 
 export const customerProfileSchema = z.object({
   firstName: z.string().trim().min(2).optional(),

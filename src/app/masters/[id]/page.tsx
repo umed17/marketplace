@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Avatar, StatusBadge } from "@/components/MasterCard";
-import { formatSomoni } from "@/lib/utils";
+import { formatMasterPrice } from "@/lib/utils";
 import { IconBadgeCheck, IconCheck, IconHeart, IconMapPin, IconStarFill, InlineCatIcon } from "@/components/icons";
 import { CardTitle, PageLoading } from "@/components/PageShell";
 
@@ -117,7 +117,7 @@ export default function MasterProfilePage() {
             </div>
           </div>
           <p className="mt-5 leading-7">{master.description}</p>
-          <p className="mt-3 font-bold text-[var(--color-accent)]">Аз {formatSomoni(master.priceFrom)}</p>
+          <p className="mt-3 font-bold text-[var(--color-accent)]">{formatMasterPrice(master.priceFrom)}</p>
           {master.workingHours && <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">Соатҳои корӣ: {master.workingHours}</p>}
         </section>
 
