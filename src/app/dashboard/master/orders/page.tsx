@@ -7,6 +7,7 @@ import { Empty } from "@/components/MasterCard";
 import { formatSomoni } from "@/lib/utils";
 import { IconClock, IconMapPin, IconWallet, InlineCatIcon } from "@/components/icons";
 import { PageHeader } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 type Order = {
   id: string;
@@ -21,6 +22,7 @@ type Order = {
 };
 
 export default function NewOrdersPage() {
+  const { tr, locale } = useLocale();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -32,10 +34,10 @@ export default function NewOrdersPage() {
   return (
     <div className="page-wrap py-8">
       <DashNav role="master" />
-      <PageHeader title="Заказҳои нав" subtitle="Заказҳои мувофиқ барои пешниҳод" />
+      <PageHeader title={tr("newOrders")} subtitle={tr("newOrdersSubtitle")} />
       <div className="grid gap-4">
         {orders.length === 0 ? (
-          <Empty title="Закази нав нест" text="Ҳангоми пайдо шудани закази мувофиқ ин ҷо мебинед." />
+          <Empty title={tr("noNewOrders")} text={tr("noNewOrdersHint")} />
         ) : (
           orders.map((o) => (
             <Link key={o.id} href={`/orders/${o.id}`} className="card card-interactive p-5">
@@ -48,14 +50,14 @@ export default function NewOrdersPage() {
                   {o.district ? `, ${o.district}` : ""}
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <IconWallet size={14} /> {formatSomoni(o.budgetFrom)}–{formatSomoni(o.budgetTo)}
+                  <IconWallet size={14} /> {formatSomoni(o.budgetFrom, locale)}–{formatSomoni(o.budgetTo, locale)}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <IconClock size={14} /> {o.preferredTime || "—"}
                 </span>
               </p>
               <p className="mt-2 line-clamp-2">{o.description}</p>
-              <span className="link mt-3 inline-block text-sm">Дидани заказ →</span>
+              <span className="link mt-3 inline-block text-sm">{tr("viewOrder")}</span>
             </Link>
           ))
         )}

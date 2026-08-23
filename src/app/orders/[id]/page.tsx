@@ -98,7 +98,7 @@ function CustomerActions({
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { tr } = useLocale();
+  const { tr, locale } = useLocale();
   const [order, setOrder] = useState<Order | null>(null);
   const [me, setMe] = useState<{ id: string; role: string } | null>(null);
   const [error, setError] = useState("");
@@ -188,7 +188,7 @@ export default function OrderDetailPage() {
     load();
   }
 
-  if (!order) return <PageLoading message={error || "Боргирӣ..."} />;
+  if (!order) return <PageLoading message={error || undefined} />;
 
   const isCustomer = me?.id === order.customerId;
   const isMaster = me?.role === "master";
@@ -213,7 +213,7 @@ export default function OrderDetailPage() {
             </p>
             <p className="mt-1 flex flex-wrap items-center gap-3 text-sm">
               <span className="inline-flex items-center gap-1">
-                <IconWallet size={15} /> {formatSomoni(order.budgetFrom)}–{formatSomoni(order.budgetTo)}
+                <IconWallet size={15} /> {formatSomoni(order.budgetFrom, locale)}–{formatSomoni(order.budgetTo, locale)}
               </span>
               <span className="inline-flex items-center gap-1 text-[var(--color-muted-foreground)]">
                 <IconClock size={15} /> {order.preferredTime || "—"}
@@ -253,7 +253,9 @@ export default function OrderDetailPage() {
                           <span>{tr("ordersCount", { count: o.master.masterProfile?.completedOrders || 0 })}</span>
                           <span>{tr("yearsExperience", { count: o.master.masterProfile?.experience || 0 })}</span>
                         </p>
-                        <p className="mt-2 font-bold text-[var(--color-accent)]">{o.price} сомонӣ</p>
+                        <p className="mt-2 font-bold text-[var(--color-accent)]">
+                          {o.price} {tr("currencySomoni")}
+                        </p>
                         <p className="mt-1 text-sm">{o.message}</p>
                         {o.arrivalTime && (
                           <p className="text-xs text-[var(--color-muted)] sm:text-sm">

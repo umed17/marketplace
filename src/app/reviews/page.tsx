@@ -59,8 +59,8 @@ export default function ReviewsPage() {
       <div className="grid gap-3">
         {reviews.length === 0 ? (
           <Empty
-            title="Отзыв нест"
-            text={role === "master" ? "Пас аз анҷоми кор отзывҳо ин ҷо меоянд." : "Баъди анҷоми заказ отзыв гузоред."}
+            title={tr("reviewEmpty")}
+            text={role === "master" ? tr("reviewEmptyMasterHint") : tr("reviewEmptyCustomerHint")}
           />
         ) : (
           reviews.map((r) => (

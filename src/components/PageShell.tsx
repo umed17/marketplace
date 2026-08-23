@@ -1,4 +1,7 @@
+"use client";
+
 import { ReactNode } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 
 export function PageHeader({
   title,
@@ -20,12 +23,13 @@ export function PageHeader({
   );
 }
 
-export function PageLoading({ message = "Боргирӣ..." }: { message?: string }) {
+export function PageLoading({ message }: { message?: string }) {
+  const { tr } = useLocale();
   return (
     <div className="page-wrap py-10">
       <div className="card flex items-center justify-center gap-3 p-10 text-[var(--color-muted-foreground)]" role="status">
         <span className="skeleton h-5 w-5 rounded-full" aria-hidden="true" />
-        {message}
+        {message || tr("loading")}
       </div>
     </div>
   );

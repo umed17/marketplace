@@ -4,6 +4,7 @@ import { FormEvent, useState, type InputHTMLAttributes } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { IconUser, IconWrench } from "@/components/icons";
+import { useLocale } from "@/components/LocaleProvider";
 
 function Field({
   label,
@@ -19,6 +20,7 @@ function Field({
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
+  const { tr } = useLocale();
   const next = useSearchParams().get("next") || "";
   const [role, setRole] = useState<"customer" | "master">("customer");
   const [error, setError] = useState("");
@@ -50,7 +52,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     const data = await res.json();
     setLoading(false);
     if (!res.ok) {
-      setError(data.error || "Хато рӯй дод");
+      setError(data.error || tr("genericError"));
       return;
     }
     router.push(next || data.redirect || "/dashboard");
@@ -60,9 +62,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   return (
     <form onSubmit={onSubmit} className="card mx-auto w-full max-w-lg space-y-4 p-5 sm:p-6 md:p-8">
       <div>
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">{mode === "login" ? "Ворид шудан" : "Регистрация"}</h1>
+        <h1 className="font-display text-2xl font-bold sm:text-3xl">{mode === "login" ? tr("login") : tr("register")}</h1>
         <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
-          {mode === "login" ? "Ба ҳисоби худ ворид шавед" : "Ҳисоби нав созед — ройгон"}
+          {mode === "login" ? tr("authLoginSubtitle") : tr("authRegisterSubtitle")}
         </p>
       </div>
 
@@ -74,7 +76,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             className={`btn text-xs sm:text-sm ${role === "master" ? "btn-primary" : "btn-ghost"}`}
           >
             <IconWrench size={16} />
-            <span className="leading-tight">Ман усто ҳастам</span>
+            <span className="leading-tight">{tr("iAmMaster")}</span>
           </button>
           <button
             type="button"
@@ -82,29 +84,29 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             className={`btn text-xs sm:text-sm ${role === "customer" ? "btn-primary" : "btn-ghost"}`}
           >
             <IconUser size={16} />
-            <span className="leading-tight">Ман муштарӣ ҳастам</span>
+            <span className="leading-tight">{tr("iAmCustomer")}</span>
           </button>
         </div>
       )}
 
       {mode === "register" && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label="Ном" name="firstName" placeholder="Масalan: Умед" required autoComplete="given-name" />
-          <Field label="Насаб" name="lastName" placeholder="Масalan: Каримов" required autoComplete="family-name" />
+          <Field label={tr("firstName")} name="firstName" required autoComplete="given-name" />
+          <Field label={tr("lastName")} name="lastName" required autoComplete="family-name" />
         </div>
       )}
 
       <Field label="Email" name="email" type="email" placeholder="email@example.com" required autoComplete="email" />
 
       {mode === "register" && (
-        <Field label="Рақами телефон" name="phone" type="tel" placeholder="+992900000000" required autoComplete="tel" />
+        <Field label={tr("phone")} name="phone" type="tel" placeholder="+992900000000" required autoComplete="tel" />
       )}
 
       <Field
-        label="Парол"
+        label={tr("password")}
         name="password"
         type="password"
-        placeholder={mode === "register" ? "Ҳадди ақал 8 аломат" : "Пароли худ"}
+        placeholder={mode === "register" ? tr("passwordHint") : tr("passwordPlaceholder")}
         required
         minLength={mode === "register" ? 8 : 1}
         autoComplete={mode === "login" ? "current-password" : "new-password"}
@@ -112,10 +114,10 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
 
       {mode === "register" && (
         <Field
-          label="Тасдиқи парол"
+          label={tr("confirmPassword")}
           name="confirmPassword"
           type="password"
-          placeholder="Паролро такрор кунед"
+          placeholder={tr("repeatPassword")}
           required
           autoComplete="new-password"
         />
@@ -128,22 +130,22 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       )}
 
       <button className="btn btn-primary w-full" disabled={loading}>
-        {loading ? "Интизор шавед..." : mode === "login" ? "Ворид шудан" : "Ҳисоб сохтан"}
+        {loading ? tr("pleaseWait") : mode === "login" ? tr("login") : tr("createAccount")}
       </button>
 
       <p className="text-center text-sm text-[var(--color-muted-foreground)]">
         {mode === "login" ? (
           <>
-            Ҳисоб надоред?{" "}
+            {tr("noAccount")}{" "}
             <Link href="/register" className="link">
-              Регистрация
+              {tr("register")}
             </Link>
           </>
         ) : (
           <>
-            Аллакай ҳисоб доред?{" "}
+            {tr("haveAccount")}{" "}
             <Link href="/login" className="link">
-              Ворид шавед
+              {tr("login")}
             </Link>
           </>
         )}

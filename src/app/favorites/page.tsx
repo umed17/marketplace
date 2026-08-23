@@ -60,7 +60,7 @@ export default function FavoritesPage() {
       />
       <div className="grid gap-4 md:grid-cols-2">
         {masters.length === 0 ? (
-          <Empty title="Холӣ" text="Устоҳои дӯстдоштаро ин ҷо нигоҳ доред." />
+          <Empty title={tr("emptyFavorites")} text={tr("emptyFavoritesHint")} />
         ) : (
           masters.map((m) => <MasterCard key={m.id} master={m} />)
         )}

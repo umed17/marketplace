@@ -6,6 +6,7 @@ import { Empty, StatusBadge } from "@/components/MasterCard";
 import { formatSomoni } from "@/lib/utils";
 import { IconClock, IconMapPin, IconPlus, IconWallet, InlineCatIcon } from "@/components/icons";
 import { PageHeader } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 type Order = {
   id: string;
@@ -21,6 +22,7 @@ type Order = {
 };
 
 export default function OrdersPage() {
+  const { locale, tr } = useLocale();
   const [orders, setOrders] = useState<Order[]>([]);
   const [q, setQ] = useState("");
 
@@ -33,25 +35,25 @@ export default function OrdersPage() {
   return (
     <div className="page-wrap py-8">
       <PageHeader
-        title="Заказҳо"
-        subtitle="Заказҳои кушода — устоҳо пешниҳод мефиристанд"
+        title={tr("orders")}
+        subtitle={tr("ordersSubtitle")}
         actions={
           <Link href="/create-order" className="btn btn-primary">
             <IconPlus size={16} />
-            Заказ гузоштан
+            {tr("createOrder")}
           </Link>
         }
       />
       <input
         className="input"
-        placeholder="Ҷустуҷӯи заказ..."
+        placeholder={tr("searchOrders")}
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        aria-label="Ҷустуҷӯи заказ"
+        aria-label={tr("searchOrders")}
       />
       <div className="mt-6 grid gap-4">
         {orders.length === 0 ? (
-          <Empty title="Закази кушода нест" text="Аввалин заказро гузоред ё баъдтар бинед." />
+          <Empty title={tr("noOpenOrders")} text={tr("noOpenOrdersHint")} />
         ) : (
           orders.map((o) => (
             <Link key={o.id} href={`/orders/${o.id}`} className="card card-interactive p-5">
@@ -67,14 +69,14 @@ export default function OrdersPage() {
                   {o.district ? `, ${o.district}` : ""}
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <IconWallet size={14} /> {formatSomoni(o.budgetFrom)}–{formatSomoni(o.budgetTo)}
+                  <IconWallet size={14} /> {formatSomoni(o.budgetFrom, locale)}–{formatSomoni(o.budgetTo, locale)}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <IconClock size={14} /> {o.preferredTime || "—"}
                 </span>
               </p>
               <p className="mt-3 line-clamp-2 text-[var(--color-ink)]">{o.description}</p>
-              <span className="link mt-3 inline-block text-sm">Дидани заказ →</span>
+              <span className="link mt-3 inline-block text-sm">{tr("viewOrder")}</span>
             </Link>
           ))
         )}

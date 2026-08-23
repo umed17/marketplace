@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { DashNav } from "@/components/DashNav";
 import { PageHeader, StatGrid } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 export default function MasterDashboard() {
+  const { tr } = useLocale();
   const [name, setName] = useState("");
   const [stats, setStats] = useState({ newOrders: 0, myOffers: 0, inProgress: 0, completed: 0, rating: 0 });
 
@@ -20,14 +22,17 @@ export default function MasterDashboard() {
   return (
     <div className="page-wrap py-8">
       <DashNav role="master" />
-      <PageHeader title={`Салом, ${name || "усто"}`} subtitle="Хулосаи заказҳо, пешниҳодҳо ва рейтинг" />
+      <PageHeader
+        title={tr("helloName", { name: name || tr("masterDefault") })}
+        subtitle={tr("dashboardMasterSubtitle")}
+      />
       <StatGrid
         items={[
-          { label: "Заказҳои нав", value: stats.newOrders },
-          { label: "Пешниҳодҳои ман", value: stats.myOffers },
-          { label: "Дар иҷроиш", value: stats.inProgress },
-          { label: "Анҷомшуда", value: stats.completed },
-          { label: "Рейтинг", value: Number(stats.rating).toFixed(1) },
+          { label: tr("newOrders"), value: stats.newOrders },
+          { label: tr("myOffers"), value: stats.myOffers },
+          { label: tr("statInProgress"), value: stats.inProgress },
+          { label: tr("statCompleted"), value: stats.completed },
+          { label: tr("statRating"), value: Number(stats.rating).toFixed(1) },
         ]}
       />
     </div>

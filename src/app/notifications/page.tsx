@@ -5,16 +5,19 @@ import Link from "next/link";
 import { Empty } from "@/components/MasterCard";
 import { timeAgo } from "@/lib/utils";
 import { PageHeader } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 type N = { id: string; title: string; body: string; link?: string | null; isRead: boolean; createdAt: string };
 
 export default function NotificationsPage() {
+  const { tr, locale } = useLocale();
   const [items, setItems] = useState<N[]>([]);
 
   async function load() {
     const d = await fetch("/api/notifications").then((r) => r.json());
     setItems(d.notifications || []);
   }
+
   useEffect(() => {
     load();
   }, []);
@@ -27,17 +30,17 @@ export default function NotificationsPage() {
   return (
     <div className="page-wrap py-8">
       <PageHeader
-        title="Огоҳиҳо"
-        subtitle="Хабарҳои нав дар бораи заказҳо ва chat"
+        title={tr("notifications")}
+        subtitle={tr("notificationsSubtitle")}
         actions={
           <button className="btn btn-ghost text-sm" onClick={readAll}>
-            Ҳамаро хондашуда
+            {tr("markAllRead")}
           </button>
         }
       />
       <div className="grid gap-3">
         {items.length === 0 ? (
-          <Empty title="Огоҳӣ нест" text="Вақте ҳодисаи нав шавад, ин ҷо мебинед." />
+          <Empty title={tr("noNotifications")} text={tr("noNotificationsHint")} />
         ) : (
           items.map((n) => (
             <Link
@@ -47,7 +50,7 @@ export default function NotificationsPage() {
             >
               <div className="font-semibold">{n.title}</div>
               <div className="mt-1 text-sm text-[var(--color-muted-foreground)]">{n.body}</div>
-              <div className="mt-2 text-xs text-[var(--color-muted-foreground)]">{timeAgo(n.createdAt)}</div>
+              <div className="mt-2 text-xs text-[var(--color-muted-foreground)]">{timeAgo(n.createdAt, locale)}</div>
             </Link>
           ))
         )}

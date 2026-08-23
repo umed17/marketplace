@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { DashNav } from "@/components/DashNav";
 import { PageHeader, StatGrid } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 export default function CustomerDashboard() {
+  const { tr } = useLocale();
   const [name, setName] = useState("");
   const [stats, setStats] = useState({ myOrders: 0, offers: 0, inProgress: 0, completed: 0 });
 
@@ -20,13 +22,16 @@ export default function CustomerDashboard() {
   return (
     <div className="page-wrap py-8">
       <DashNav role="customer" />
-      <PageHeader title={`Салом, ${name || "муштарӣ"}`} subtitle="Хулосаи заказҳо ва пешниҳодҳо" />
+      <PageHeader
+        title={tr("helloName", { name: name || tr("customerDefault") })}
+        subtitle={tr("dashboardCustomerSubtitle")}
+      />
       <StatGrid
         items={[
-          { label: "Заказҳои ман", value: stats.myOrders },
-          { label: "Пешниҳодҳо", value: stats.offers },
-          { label: "Дар иҷроиш", value: stats.inProgress },
-          { label: "Анҷомшуда", value: stats.completed },
+          { label: tr("myOrders"), value: stats.myOrders },
+          { label: tr("statOffers"), value: stats.offers },
+          { label: tr("statInProgress"), value: stats.inProgress },
+          { label: tr("statCompleted"), value: stats.completed },
         ]}
       />
     </div>

@@ -1,3 +1,5 @@
+import { type Locale, t } from "./i18n";
+
 export function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
@@ -7,14 +9,15 @@ export function fullName(user: { firstName: string; lastName: string; displayNam
   return `${user.firstName} ${user.lastName}`.trim();
 }
 
-export function formatSomoni(value?: number | null) {
+export function formatSomoni(value?: number | null, locale: Locale = "tg") {
   if (value == null) return "—";
-  return `${value.toLocaleString("tg-TJ")} сомонӣ`;
+  const loc = locale === "ru" ? "ru-RU" : "tg-TJ";
+  return `${value.toLocaleString(loc)} ${t(locale, "currencySomoni")}`;
 }
 
-export function formatMasterPrice(value?: number | null) {
-  if (value == null) return "Шартномavӣ";
-  return `Аз ${formatSomoni(value)}`;
+export function formatMasterPrice(value?: number | null, locale: Locale = "tg") {
+  if (value == null) return t(locale, "priceNegotiable");
+  return `${t(locale, "pricePrefixFrom")} ${formatSomoni(value, locale)}`;
 }
 
 export function formatDate(value: string | Date) {
@@ -28,16 +31,16 @@ export function formatDate(value: string | Date) {
   });
 }
 
-export function timeAgo(value: string | Date) {
+export function timeAgo(value: string | Date, locale: Locale = "tg") {
   const date = typeof value === "string" ? new Date(value) : value;
   const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "ҳозир";
-  if (mins < 60) return `${mins} дақ пеш`;
+  if (mins < 1) return t(locale, "timeNow");
+  if (mins < 60) return t(locale, "timeMinutesAgo", { n: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} соат пеш`;
+  if (hours < 24) return t(locale, "timeHoursAgo", { n: hours });
   const days = Math.floor(hours / 24);
-  return `${days} рӯз пеш`;
+  return t(locale, "timeDaysAgo", { n: days });
 }
 
 export function isOnline(lastSeenAt?: string | Date | null) {

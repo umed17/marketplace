@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getPostAuthRedirect } from "@/lib/post-auth-redirect";
+import { useLocale } from "@/components/LocaleProvider";
 
 type User = {
   id: string;
@@ -13,6 +14,7 @@ type User = {
 
 export default function DashboardIndex() {
   const router = useRouter();
+  const { tr } = useLocale();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -24,5 +26,5 @@ export default function DashboardIndex() {
     });
   }, [router]);
 
-  return <div className="page-wrap py-10">{user ? "Гузариш..." : "Боргирӣ..."}</div>;
+  return <div className="page-wrap py-10">{user ? tr("redirecting") : tr("loading")}</div>;
 }

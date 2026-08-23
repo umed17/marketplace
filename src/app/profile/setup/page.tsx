@@ -4,12 +4,14 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CITIES, DISTRICTS } from "@/lib/constants";
 import { PageHeader } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 type Category = { id: string; name: string };
 type PriceType = "fixed" | "negotiable";
 
 export default function MasterSetupPage() {
   const router = useRouter();
+  const { tr } = useLocale();
   const [categories, setCategories] = useState<Category[]>([]);
   const [city, setCity] = useState("Душанбе");
   const [error, setError] = useState("");
@@ -72,9 +74,9 @@ export default function MasterSetupPage() {
 
   return (
     <div className="page-wrap py-8">
-      <PageHeader title="Профили усто" subtitle="Маълумоти касбии худро пур кунед" />
+      <PageHeader title={tr("profileSetupTitle")} subtitle={tr("profileSetupSubtitle")} />
       <form onSubmit={onSubmit} className="card mx-auto max-w-2xl space-y-4 p-6 md:p-8">
-        <input className="input" name="phone" placeholder="Телефон" />
+        <input className="input" name="phone" placeholder={tr("phone")} />
         <div className="grid gap-3 sm:grid-cols-2">
           <select className="select" name="city" value={city} onChange={(e) => setCity(e.target.value)}>
             {CITIES.map((c) => (
@@ -82,25 +84,25 @@ export default function MasterSetupPage() {
             ))}
           </select>
           <select className="select" name="district">
-            <option value="">Ноҳия</option>
+            <option value="">{tr("district")}</option>
             {(DISTRICTS[city] || []).map((d) => (
               <option key={d}>{d}</option>
             ))}
           </select>
         </div>
         <select className="select" name="categoryId" required>
-          <option value="">Категорияи асосӣ</option>
+          <option value="">{tr("mainCategory")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>
           ))}
         </select>
-        <input className="input" name="experience" type="number" placeholder="Таҷриба (сол)" required />
-        <textarea className="textarea" name="description" placeholder="Тавсиф дар бораи худ" required />
+        <input className="input" name="experience" type="number" placeholder={tr("experience")} required />
+        <textarea className="textarea" name="description" placeholder={tr("description")} required />
 
         <fieldset className="space-y-3">
-          <legend className="text-sm font-semibold text-[var(--color-ink)]">Нархи хизмат</legend>
+          <legend className="text-sm font-semibold text-[var(--color-ink)]">{tr("priceService")}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             <label
               className={`cursor-pointer rounded-xl border p-4 transition-colors ${
@@ -119,10 +121,8 @@ export default function MasterSetupPage() {
                   className="mt-1"
                 />
                 <span>
-                  <span className="block font-semibold">Дар сомонӣ</span>
-                  <span className="mt-1 block text-sm text-[var(--color-muted-foreground)]">
-                    Нархи корро бо сомонӣ нависед, мисли дигар платформаҳо
-                  </span>
+                  <span className="block font-semibold">{tr("priceFixed")}</span>
+                  <span className="mt-1 block text-sm text-[var(--color-muted-foreground)]">{tr("priceFixedHint")}</span>
                 </span>
               </span>
             </label>
@@ -144,10 +144,8 @@ export default function MasterSetupPage() {
                   className="mt-1"
                 />
                 <span>
-                  <span className="block font-semibold">Шартномavӣ</span>
-                  <span className="mt-1 block text-sm text-[var(--color-muted-foreground)]">
-                    Нарх бо муштарӣ баъд аз мубоҳиса муайян мешавад
-                  </span>
+                  <span className="block font-semibold">{tr("priceNegotiableLabel")}</span>
+                  <span className="mt-1 block text-sm text-[var(--color-muted-foreground)]">{tr("priceNegotiableHint")}</span>
                 </span>
               </span>
             </label>
@@ -162,21 +160,21 @@ export default function MasterSetupPage() {
                 min={0}
                 value={priceFrom}
                 onChange={(e) => setPriceFrom(e.target.value)}
-                placeholder="Масалан: 150"
+                placeholder={tr("examplePrice")}
                 required
               />
-              <span className="shrink-0 text-sm font-semibold text-[var(--color-muted-foreground)]">сомонӣ</span>
+              <span className="shrink-0 text-sm font-semibold text-[var(--color-muted-foreground)]">{tr("currencySomoni")}</span>
             </div>
           )}
         </fieldset>
 
-        <input className="input" name="workingHours" placeholder="Соатҳои корӣ, масалан 08:00–20:00" />
+        <input className="input" name="workingHours" placeholder={tr("workingHoursExample")} />
         {error && (
           <p className="alert-error" role="alert">
             {error}
           </p>
         )}
-        <button className="btn btn-primary w-full">Профилро захира кардан</button>
+        <button className="btn btn-primary w-full">{tr("saveProfile")}</button>
       </form>
     </div>
   );

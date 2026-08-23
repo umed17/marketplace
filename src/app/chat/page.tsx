@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Avatar, Empty } from "@/components/MasterCard";
 import { timeAgo, isOnline } from "@/lib/utils";
 import { PageHeader } from "@/components/PageShell";
+import { useLocale } from "@/components/LocaleProvider";
 
 type Item = {
   id: string;
@@ -16,7 +17,9 @@ type Item = {
 };
 
 export default function ChatListPage() {
+  const { tr, locale } = useLocale();
   const [items, setItems] = useState<Item[]>([]);
+
   useEffect(() => {
     fetch("/api/conversations")
       .then((r) => r.json())
@@ -31,10 +34,10 @@ export default function ChatListPage() {
 
   return (
     <div className="page-wrap py-8">
-      <PageHeader title="Chat" subtitle="Муошират бо усто ё муштарӣ" />
+      <PageHeader title={tr("chat")} subtitle={tr("chatSubtitle")} />
       <div className="grid gap-3">
         {items.length === 0 ? (
-          <Empty title="Chat нест" text="Пас аз интихоби усто chat кушода мешавад." />
+          <Empty title={tr("noChat")} text={tr("noChatHint")} />
         ) : (
           items.map((c) => {
             const name = `${c.other.firstName} ${c.other.lastName}`;
@@ -48,12 +51,12 @@ export default function ChatListPage() {
                       {isOnline(c.other.lastSeenAt) && (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
                           <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                          Online
+                          {tr("online")}
                         </span>
                       )}
                     </div>
                     <div className="shrink-0 text-xs text-[var(--color-muted-foreground)]">
-                      {timeAgo(c.lastMessage?.createdAt || c.updatedAt)}
+                      {timeAgo(c.lastMessage?.createdAt || c.updatedAt, locale)}
                     </div>
                   </div>
                   <div className="truncate text-sm text-[var(--color-muted-foreground)]">

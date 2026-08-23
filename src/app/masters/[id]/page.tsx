@@ -99,7 +99,7 @@ function MasterActions({
 export default function MasterProfilePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { tr } = useLocale();
+  const { tr, locale } = useLocale();
   const [master, setMaster] = useState<Master | null>(null);
   const [me, setMe] = useState<{ id: string; role: string } | null>(null);
   const [error, setError] = useState("");
@@ -182,7 +182,7 @@ export default function MasterProfilePage() {
               </div>
             </div>
             <p className="mt-4 text-sm leading-7 sm:text-base">{master.description}</p>
-            <p className="mt-3 font-bold text-[var(--color-accent)]">{formatMasterPrice(master.priceFrom)}</p>
+            <p className="mt-3 font-bold text-[var(--color-accent)]">{formatMasterPrice(master.priceFrom, locale)}</p>
             {master.workingHours && (
               <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
                 {tr("workingHoursLabel")}: {master.workingHours}

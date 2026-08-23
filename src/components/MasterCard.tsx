@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { formatMasterPrice } from "@/lib/utils";
 import { IconBadgeCheck, IconCheck, IconMapPin, IconStarFill, InlineCatIcon } from "@/components/icons";
+import { useLocale } from "@/components/LocaleProvider";
 
 export { StatusBadge } from "@/components/StatusBadge";
 
@@ -38,6 +39,8 @@ export function Avatar({ name, src, size = 56 }: { name: string; src?: string | 
 }
 
 export function MasterCard({ master }: { master: MasterCardData }) {
+  const { locale, tr } = useLocale();
+
   return (
     <article className="card flex flex-col gap-4 p-5 transition-colors hover:border-[var(--color-secondary)]">
       <div className="flex gap-4">
@@ -47,13 +50,13 @@ export function MasterCard({ master }: { master: MasterCardData }) {
             <h3 className="truncate font-display text-xl font-bold">{master.displayName}</h3>
             {master.isVerified && (
               <span className="badge">
-                <IconBadgeCheck size={13} /> Тасдиқшуда
+                <IconBadgeCheck size={13} /> {tr("verified")}
               </span>
             )}
             {master.isOnline && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                Online
+                {tr("online")}
               </span>
             )}
           </div>
@@ -62,13 +65,13 @@ export function MasterCard({ master }: { master: MasterCardData }) {
               <IconStarFill size={14} /> {master.rating?.toFixed?.(1) ?? "0.0"}
             </span>
             <span className="inline-flex items-center gap-1">
-              <IconCheck size={14} /> {master.completedOrders} заказ
+              <IconCheck size={14} /> {tr("ordersCount", { count: master.completedOrders })}
             </span>
           </p>
           <p className="mt-1 flex flex-wrap items-center gap-3 text-sm">
             <span className="inline-flex items-center gap-1">
               <InlineCatIcon icon={master.category?.icon} name={master.category?.name} slug={master.category?.slug} />{" "}
-              {master.category?.name || "Усто"}
+              {master.category?.name || tr("masterRole")}
             </span>
             <span className="inline-flex items-center gap-1 text-[var(--color-muted-foreground)]">
               <IconMapPin size={14} /> {master.city || "—"}
@@ -77,9 +80,9 @@ export function MasterCard({ master }: { master: MasterCardData }) {
         </div>
       </div>
       <div className="mt-auto flex items-center justify-between gap-3 border-t border-[var(--color-border)] pt-4">
-        <div className="font-bold text-[var(--color-accent)]">{formatMasterPrice(master.priceFrom)}</div>
+        <div className="font-bold text-[var(--color-accent)]">{formatMasterPrice(master.priceFrom, locale)}</div>
         <Link href={`/masters/${master.id}`} className="btn btn-primary text-sm">
-          Профилро дидан
+          {tr("viewProfile")}
         </Link>
       </div>
     </article>

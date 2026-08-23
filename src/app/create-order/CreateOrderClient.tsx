@@ -9,7 +9,7 @@ import { useLocale } from "@/components/LocaleProvider";
 type Category = { id: string; name: string; slug: string };
 
 export default function CreateOrderPage() {
-  const { locale } = useLocale();
+  const { locale, tr } = useLocale();
   const router = useRouter();
   const sp = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -50,7 +50,7 @@ export default function CreateOrderPage() {
     const data = await res.json();
     if (!res.ok) {
       setLoading(false);
-      setError(data.error || "Хато");
+      setError(data.error || tr("genericError"));
       return;
     }
 
@@ -77,21 +77,19 @@ export default function CreateOrderPage() {
 
   return (
     <div className="page-wrap py-8">
-      <PageHeader title="Заказ гузоштан" subtitle="Маълумотро пур кунед — устоҳо пешниҳод мефиристанд" />
+      <PageHeader title={tr("createOrder")} subtitle={tr("createOrderSubtitle")} />
       <form onSubmit={onSubmit} className="card mx-auto max-w-2xl space-y-4 p-6 md:p-8">
-        {sp.get("masterId") && (
-          <p className="alert-info">Ин заказ мустақим ба устои интихобшуда меравад ва chat кушода мешавад.</p>
-        )}
-        <input className="input" name="title" placeholder="Номи заказ" required />
+        {sp.get("masterId") && <p className="alert-info">{tr("directOrderHint")}</p>}
+        <input className="input" name="title" placeholder={tr("orderTitle")} required />
         <select className="select" name="categoryId" defaultValue={sp.get("categoryId") || ""} required>
-          <option value="">Категория</option>
+          <option value="">{tr("category")}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {displayCategoryName(c.slug, c.name, locale)}
             </option>
           ))}
         </select>
-        <textarea className="textarea" name="description" placeholder="Тавсифи кор" required />
+        <textarea className="textarea" name="description" placeholder={tr("orderDescription")} required />
         <div className="grid gap-3 sm:grid-cols-2">
           <select className="select" name="city" value={city} onChange={(e) => setCity(e.target.value)}>
             {CITIES.map((c) => (
@@ -99,27 +97,27 @@ export default function CreateOrderPage() {
             ))}
           </select>
           <select className="select" name="district">
-            <option value="">Ноҳия</option>
+            <option value="">{tr("district")}</option>
             {districts.map((d) => (
               <option key={d}>{d}</option>
             ))}
           </select>
         </div>
-        <input className="input" name="address" placeholder="Адрес/ҷой" />
+        <input className="input" name="address" placeholder={tr("address")} />
         <div className="grid gap-3 sm:grid-cols-2">
-          <input className="input" name="budgetFrom" type="number" placeholder="Буҷет аз" />
-          <input className="input" name="budgetTo" type="number" placeholder="Буҷет то" />
+          <input className="input" name="budgetFrom" type="number" placeholder={tr("budgetFrom")} />
+          <input className="input" name="budgetTo" type="number" placeholder={tr("budgetTo")} />
         </div>
-        <input className="input" name="preferredTime" placeholder="Вақти лозим (масалан Имрӯз 18:00)" />
+        <input className="input" name="preferredTime" placeholder={tr("preferredTime")} />
         <select className="select" name="priority" defaultValue="normal">
-          <option value="low">Priority: Паст</option>
-          <option value="normal">Priority: Муқаррарӣ</option>
-          <option value="high">Priority: Баланд</option>
+          <option value="low">{tr("priorityLow")}</option>
+          <option value="normal">{tr("priorityNormal")}</option>
+          <option value="high">{tr("priorityHigh")}</option>
         </select>
         <input className="input" type="file" multiple accept="image/*,video/mp4,video/webm" onChange={(e) => setFiles(Array.from(e.target.files || []))} />
         {error && <p className="alert-error" role="alert">{error}</p>}
         <button className="btn btn-primary w-full" disabled={loading}>
-          {loading ? "Нашр..." : "Заказро нашр кардан"}
+          {loading ? tr("publishing") : tr("publishOrder")}
         </button>
       </form>
     </div>

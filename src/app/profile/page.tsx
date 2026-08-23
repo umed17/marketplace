@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/MasterCard";
 import { IconClose } from "@/components/icons";
 import { CardTitle, PageHeader, PageLoading } from "@/components/PageShell";
+import { roleLabel } from "@/lib/i18n";
 import { useLocale } from "@/components/LocaleProvider";
 
 type User = {
@@ -25,7 +26,7 @@ type User = {
 };
 
 export default function ProfilePage() {
-  const { tr } = useLocale();
+  const { tr, locale } = useLocale();
   const [user, setUser] = useState<User | null>(null);
   const [desc, setDesc] = useState("");
 
@@ -79,29 +80,29 @@ export default function ProfilePage() {
 
   return (
     <div className="page-wrap space-y-6 py-8">
-      <PageHeader title={tr("profile")} subtitle="Маълумоти шахсӣ ва корҳои анҷомшуда" />
+      <PageHeader title={tr("profile")} subtitle={tr("profilePersonalSubtitle")} />
       <section className="card p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <Avatar name={name} src={user.avatar} size={80} />
           <div className="flex-1">
             <h2 className="font-display text-2xl font-bold">{name}</h2>
             <p className="text-[var(--color-muted-foreground)]">
-              {user.role === "master" ? "Усто" : user.role === "admin" ? "Админ" : "Муштарӣ"} · {user.email} · {user.phone}
+              {roleLabel(locale, user.role)} · {user.email} · {user.phone}
             </p>
           </div>
           <label className="btn btn-ghost cursor-pointer">
-            Сурат илова кардан
+            {tr("addPhoto")}
             <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
           </label>
         </div>
         {user.role === "master" && (
           <Link href="/profile/setup" className="btn btn-primary mt-4">
-            Профилро таҳрир кардан
+            {tr("editProfile")}
           </Link>
         )}
         {user.role === "customer" && (
           <Link href="/settings" className="btn btn-primary mt-4">
-            Профилро таҳрир кардан
+            {tr("editProfile")}
           </Link>
         )}
       </section>
@@ -110,9 +111,9 @@ export default function ProfilePage() {
         <section className="card p-6">
           <CardTitle>{tr("portfolio")}</CardTitle>
           <form onSubmit={addPortfolio} className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-            <input className="input" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Тавсифи кор" />
+            <input className="input" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={tr("addPortfolioDesc")} />
             <input className="input" type="file" name="file" accept="image/*" />
-            <button className="btn btn-primary sm:col-span-2">Илова кардан</button>
+            <button className="btn btn-primary sm:col-span-2">{tr("addPortfolio")}</button>
           </form>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {user.masterProfile?.portfolio?.map((p) => (
@@ -120,13 +121,13 @@ export default function ProfilePage() {
                 {p.imageUrl ? (
                   <img src={p.imageUrl} alt="" className="h-36 w-full object-cover" />
                 ) : (
-                  <div className="media-card-placeholder h-36">Сурат нест</div>
+                  <div className="media-card-placeholder h-36">{tr("noPhoto")}</div>
                 )}
                 <div className="flex items-center justify-between p-3 text-sm">
                   <span>{p.description}</span>
                   <button
                     className="btn btn-ghost px-2 py-1 text-rose-700"
-                    aria-label="Нест кардан"
+                    aria-label={tr("delete")}
                     onClick={async () => {
                       await fetch(`/api/portfolio?id=${p.id}`, { method: "DELETE" });
                       load();
