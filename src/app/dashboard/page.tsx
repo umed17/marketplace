@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getPostAuthRedirect } from "@/lib/post-auth-redirect";
 
 type User = {
   id: string;
@@ -19,11 +20,7 @@ export default function DashboardIndex() {
       if (!r.ok) return router.push("/login");
       const d = await r.json();
       setUser(d.user);
-      if (d.user.role === "admin") router.replace("/admin");
-      else if (d.user.role === "master") {
-        if (!d.user.masterProfile?.setupCompleted) router.replace("/profile/setup");
-        else router.replace("/dashboard/master");
-      } else router.replace("/dashboard/customer");
+      router.replace(getPostAuthRedirect(d.user));
     });
   }, [router]);
 

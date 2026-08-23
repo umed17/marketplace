@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTokenFromRequest, verifyToken } from "@/lib/auth";
+import { getHomeRedirect } from "@/lib/post-auth-redirect";
 
 const PUBLIC = [
   "/",
@@ -49,8 +50,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (pathname === "/" && user) {
+    return NextResponse.redirect(new URL(getHomeRedirect(user.role), req.url));
+  }
+
   if ((pathname === "/login" || pathname === "/register") && user) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(new URL(getHomeRedirect(user.role), req.url));
   }
 
   if (pathname.startsWith("/api/") && !isPublic(pathname) && !user) {

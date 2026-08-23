@@ -5,6 +5,7 @@ import { applyAuthCookie, publicUser, signToken } from "@/lib/auth";
 import { registerSchema } from "@/lib/validations";
 import { handleError, jsonError } from "@/lib/api";
 import { rateLimit } from "@/lib/rate-limit";
+import { getPostAuthRedirect } from "@/lib/post-auth-redirect";
 import { normalizePhone } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
         customerProfile: data.role === "customer" ? { create: {} } : undefined,
         masterProfile: data.role === "master" ? { create: { displayName: `${data.firstName} ${data.lastName}` } } : undefined,
       },
+      include: { masterProfile: true },
     });
 
     const token = await signToken({
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
       lastName: user.lastName,
     });
 
-    const redirect = user.role === "master" ? "/profile/setup" : "/dashboard";
+    const redirect = getPostAuthRedirect(user);
     const res = NextResponse.json({ user: publicUser(user), redirect });
     return applyAuthCookie(res, token);
   } catch (error) {

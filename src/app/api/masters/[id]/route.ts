@@ -78,6 +78,10 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 
     const data = masterProfileSchema.parse(await req.json());
 
+    const displayName =
+      data.displayName?.trim() ||
+      `${data.firstName || me.firstName} ${data.lastName || me.lastName}`.trim();
+
     if (data.phone && data.phone !== me.phone) {
       const phone = normalizePhone(data.phone);
       const taken = await prisma.user.findFirst({ where: { phone, NOT: { id: me.id } } });
@@ -98,7 +102,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     const profile = await prisma.masterProfile.upsert({
       where: { userId: id },
       update: {
-        displayName: data.displayName,
+        displayName,
         city: data.city,
         district: data.district,
         categoryId: data.categoryId,
@@ -110,7 +114,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       },
       create: {
         userId: id,
-        displayName: data.displayName,
+        displayName,
         city: data.city,
         district: data.district,
         categoryId: data.categoryId,

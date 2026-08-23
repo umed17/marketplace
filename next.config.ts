@@ -3,12 +3,6 @@ import type { NextConfig } from "next";
 const backendUrl = process.env.BACKEND_URL?.replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
   experimental: {
     serverActions: {
       bodySizeLimit: "12mb",

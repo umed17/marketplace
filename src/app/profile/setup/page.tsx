@@ -13,7 +13,6 @@ export default function MasterSetupPage() {
   const [city, setCity] = useState("Душанбе");
   const [error, setError] = useState("");
   const [userId, setUserId] = useState("");
-  const [services, setServices] = useState("Насб, Таъмир");
 
   useEffect(() => {
     fetch("/api/categories")
@@ -34,9 +33,6 @@ export default function MasterSetupPage() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        displayName: form.get("displayName"),
-        firstName: form.get("firstName"),
-        lastName: form.get("lastName"),
         city: form.get("city"),
         district: form.get("district"),
         categoryId: form.get("categoryId"),
@@ -45,26 +41,17 @@ export default function MasterSetupPage() {
         priceFrom: Number(form.get("priceFrom")),
         workingHours: form.get("workingHours"),
         phone: form.get("phone"),
-        services: String(form.get("services") || "")
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
       }),
     });
     const data = await res.json();
     if (!res.ok) return setError(data.error);
-    router.push("/dashboard/master");
+    router.push("/dashboard/master/orders");
   }
 
   return (
     <div className="page-wrap py-8">
       <PageHeader title="Профили усто" subtitle="Маълумоти касбии худро пур кунед" />
       <form onSubmit={onSubmit} className="card mx-auto max-w-2xl space-y-4 p-6 md:p-8">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <input className="input" name="firstName" placeholder="Ном" />
-          <input className="input" name="lastName" placeholder="Насаб" />
-        </div>
-        <input className="input" name="displayName" placeholder="Номи намоишӣ" />
         <input className="input" name="phone" placeholder="Телефон" />
         <div className="grid gap-3 sm:grid-cols-2">
           <select className="select" name="city" value={city} onChange={(e) => setCity(e.target.value)}>
@@ -87,7 +74,6 @@ export default function MasterSetupPage() {
             </option>
           ))}
         </select>
-        <input className="input" name="services" value={services} onChange={(e) => setServices(e.target.value)} placeholder="Хизматрасониҳо (бо вергул)" />
         <input className="input" name="experience" type="number" placeholder="Таҷриба (сол)" required />
         <textarea className="textarea" name="description" placeholder="Тавсиф дар бораи худ" required />
         <input className="input" name="priceFrom" type="number" placeholder="Нарх аз ... сомонӣ" required />

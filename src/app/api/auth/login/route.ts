@@ -5,6 +5,7 @@ import { applyAuthCookie, publicUser, signToken } from "@/lib/auth";
 import { loginSchema } from "@/lib/validations";
 import { handleError, jsonError } from "@/lib/api";
 import { rateLimit } from "@/lib/rate-limit";
+import { getPostAuthRedirect } from "@/lib/post-auth-redirect";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +15,10 @@ export async function POST(req: NextRequest) {
     }
 
     const data = loginSchema.parse(await req.json());
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
+      include: { masterProfile: true },
+    });
     if (!user || !(await verifyPassword(data.password, user.passwordHash))) {
       return jsonError("Email ё парол нодуруст аст.", 401);
     }
@@ -35,12 +39,7 @@ export async function POST(req: NextRequest) {
       lastName: user.lastName,
     });
 
-    const redirect =
-      user.role === "admin"
-        ? "/admin"
-        : user.role === "master"
-          ? "/dashboard/master"
-          : "/dashboard/customer";
+    const redirect = getPostAuthRedirect(user);
 
     const res = NextResponse.json({ user: publicUser(user), redirect });
     return applyAuthCookie(res, token);
