@@ -58,7 +58,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[rgba(255,255,255,0.92)] backdrop-blur-sm">
-      <div className="page-wrap flex items-center justify-between gap-2 py-3">
+      <div className="page-wrap flex items-center justify-end gap-2 py-2 lg:justify-between lg:py-3">
         <nav className="hidden items-center gap-1 text-sm font-semibold lg:flex" aria-label="Навигатсияи асосӣ">
           {links.map((l) => (
             <Link
@@ -75,12 +75,12 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="header-actions ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
           {user ? (
             <>
               <Link
                 href="/notifications"
-                className="btn btn-ghost relative px-3 py-2"
+                className="btn btn-ghost relative px-2 py-1.5 sm:px-3 sm:py-2"
                 aria-label={unread > 0 ? tr("notificationsUnread", { count: unread }) : tr("notifications")}
               >
                 <IconBell size={18} />
@@ -95,36 +95,35 @@ export function Header() {
                   {tr("admin")}
                 </Link>
               )}
-              <button onClick={logout} className="btn btn-primary px-3 py-2 text-xs sm:text-sm">
-                <IconLogout size={16} />
+              <button onClick={logout} className="btn btn-primary px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm">
+                <IconLogout size={15} />
                 {tr("logout")}
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="btn btn-ghost px-3 py-2 text-xs sm:text-sm">
-                <IconLogin size={16} />
+              <Link href="/login" className="btn btn-ghost px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm">
+                <IconLogin size={15} />
                 {tr("login")}
               </Link>
-              <Link href="/register" className="btn btn-primary px-3 py-2 text-xs sm:text-sm">
-                <IconUserPlus size={16} />
+              <Link href="/register" className="btn btn-primary px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm">
+                <IconUserPlus size={15} />
                 {tr("register")}
               </Link>
             </>
           )}
 
-          <LanguageSwitcher />
+          <LanguageSwitcher className="shrink-0" />
 
-          <div className="lg:hidden">
-            <button
-              className="btn btn-ghost px-2.5 py-2"
-              onClick={() => setOpen((v) => !v)}
-              aria-expanded={open}
-              aria-label={open ? tr("closeMenu") : tr("openMenu")}
-            >
-              {open ? <IconClose size={20} /> : <IconMenu size={20} />}
-            </button>
-          </div>
+          <button
+            type="button"
+            className="menu-toggle lg:hidden"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-label={open ? tr("closeMenu") : tr("openMenu")}
+          >
+            {open ? <IconClose size={18} /> : <IconMenu size={18} />}
+          </button>
         </div>
       </div>
 

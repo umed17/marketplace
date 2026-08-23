@@ -1,9 +1,21 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, type InputHTMLAttributes } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { IconUser, IconWrench } from "@/components/icons";
+
+function Field({
+  label,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  return (
+    <label className="field">
+      <span className="field-label">{label}</span>
+      <input className="input" {...props} />
+    </label>
+  );
+}
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
@@ -46,9 +58,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card mx-auto w-full max-w-lg space-y-4 p-6 md:p-8">
+    <form onSubmit={onSubmit} className="card mx-auto w-full max-w-lg space-y-4 p-5 sm:p-6 md:p-8">
       <div>
-        <h1 className="font-display text-3xl font-bold">{mode === "login" ? "Ворид шудан" : "Регистрация"}</h1>
+        <h1 className="font-display text-2xl font-bold sm:text-3xl">{mode === "login" ? "Ворид шудан" : "Регистрация"}</h1>
         <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
           {mode === "login" ? "Ба ҳисоби худ ворид шавед" : "Ҳисоби нав созед — ройгон"}
         </p>
@@ -59,47 +71,51 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <button
             type="button"
             onClick={() => setRole("master")}
-            className={`btn text-sm ${role === "master" ? "btn-primary" : "btn-ghost"}`}
+            className={`btn text-xs sm:text-sm ${role === "master" ? "btn-primary" : "btn-ghost"}`}
           >
             <IconWrench size={16} />
-            Ман усто ҳастам
+            <span className="leading-tight">Ман усто ҳастам</span>
           </button>
           <button
             type="button"
             onClick={() => setRole("customer")}
-            className={`btn text-sm ${role === "customer" ? "btn-primary" : "btn-ghost"}`}
+            className={`btn text-xs sm:text-sm ${role === "customer" ? "btn-primary" : "btn-ghost"}`}
           >
             <IconUser size={16} />
-            Ман муштарӣ ҳастам
+            <span className="leading-tight">Ман муштарӣ ҳастам</span>
           </button>
         </div>
       )}
 
       {mode === "register" && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <input className="input" name="firstName" placeholder="Ном" required autoComplete="given-name" />
-          <input className="input" name="lastName" placeholder="Насаб" required autoComplete="family-name" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Ном" name="firstName" placeholder="Масalan: Умед" required autoComplete="given-name" />
+          <Field label="Насаб" name="lastName" placeholder="Масalan: Каримов" required autoComplete="family-name" />
         </div>
       )}
-      <input className="input" name="email" type="email" placeholder="Email" required autoComplete="email" />
+
+      <Field label="Email" name="email" type="email" placeholder="email@example.com" required autoComplete="email" />
+
       {mode === "register" && (
-        <input className="input" name="phone" placeholder="Рақами телефон" required autoComplete="tel" />
+        <Field label="Рақами телефон" name="phone" type="tel" placeholder="+992900000000" required autoComplete="tel" />
       )}
-      <input
-        className="input"
+
+      <Field
+        label="Парол"
         name="password"
         type="password"
-        placeholder="Парол"
+        placeholder={mode === "register" ? "Ҳадди ақал 8 аломат" : "Пароли худ"}
         required
         minLength={mode === "register" ? 8 : 1}
         autoComplete={mode === "login" ? "current-password" : "new-password"}
       />
+
       {mode === "register" && (
-        <input
-          className="input"
+        <Field
+          label="Тасдиқи парол"
           name="confirmPassword"
           type="password"
-          placeholder="Тасдиқи парол"
+          placeholder="Паролро такрор кунед"
           required
           autoComplete="new-password"
         />
