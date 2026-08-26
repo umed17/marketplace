@@ -125,15 +125,17 @@ export function Header() {
 
           <LanguageSwitcher className="shrink-0" />
 
-          <button
-            type="button"
-            className="menu-toggle lg:hidden"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-label={open ? tr("closeMenu") : tr("openMenu")}
-          >
-            {open ? <IconClose size={18} /> : <IconMenu size={18} />}
-          </button>
+          <div className="header-mobile-menu lg:hidden">
+            <button
+              type="button"
+              className="menu-toggle"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-label={open ? tr("closeMenu") : tr("openMenu")}
+            >
+              {open ? <IconClose size={18} /> : <IconMenu size={18} />}
+            </button>
+          </div>
         </div>
       </div>
 
