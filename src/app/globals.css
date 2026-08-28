@@ -188,6 +188,47 @@ h3,
   outline-offset: 2px;
 }
 
+.otp-grid {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+.otp-cell {
+  aspect-ratio: 1;
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.875rem;
+  background: white;
+  text-align: center;
+  font: inherit;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+.otp-cell:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
+  transform: translateY(-1px);
+}
+
+.otp-cell:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (min-width: 640px) {
+  .otp-cell {
+    min-height: 3.25rem;
+    font-size: 1.5rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .header-mobile-menu,
   .menu-toggle {

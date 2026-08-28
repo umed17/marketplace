@@ -7,6 +7,7 @@ import { IconUser, IconWrench } from "@/components/icons";
 import { useLocale } from "@/components/LocaleProvider";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { mapSupabaseAuthError } from "@/lib/supabase/auth-errors";
+import { EMAIL_OTP_LENGTH, OtpInput } from "@/components/OtpInput";
 
 function Field({
   label,
@@ -137,7 +138,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     if (!pending) return;
 
     const code = otp.trim();
-    if (!code) {
+    if (code.length !== EMAIL_OTP_LENGTH) {
       setError(tr("emailCodePlaceholder"));
       return;
     }
@@ -240,15 +241,11 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           </p>
         </div>
 
-        <Field
+        <OtpInput
           label={tr("emailCodeLabel")}
-          name="otp"
           value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          placeholder={tr("emailCodePlaceholder")}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          required
+          onChange={setOtp}
+          disabled={loading}
         />
 
         {error && (
@@ -257,7 +254,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           </p>
         )}
 
-        <button className="btn btn-primary w-full" disabled={loading || !otp.trim()}>
+        <button className="btn btn-primary w-full" disabled={loading || otp.length !== EMAIL_OTP_LENGTH}>
           {loading ? tr("pleaseWait") : tr("verifyEmail")}
         </button>
 
