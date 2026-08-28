@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       where: { email: data.email },
       include: { masterProfile: true },
     });
-    if (!user || !(await verifyPassword(data.password, user.passwordHash))) {
+    if (!user || !user.passwordHash || !(await verifyPassword(data.password, user.passwordHash))) {
       return jsonError("Email ё парол нодуруст аст.", 401);
     }
     if (user.isBlocked) {

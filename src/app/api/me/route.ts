@@ -14,6 +14,9 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
 
     if (body.currentPassword && body.newPassword) {
+      if (!me.passwordHash) {
+        return jsonError("Парол тавассути Supabase идора мешавад. Дар Supabase иваз кунед.");
+      }
       const ok = await verifyPassword(body.currentPassword, me.passwordHash);
       if (!ok) return jsonError("Пароли ҷорӣ нодуруст аст");
       if (String(body.newPassword).length < 8) return jsonError("Пароли нав хеле кӯтоҳ аст");

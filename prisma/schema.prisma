@@ -50,11 +50,12 @@ enum MediaType {
 
 model User {
   id           String    @id @default(cuid())
+  supabaseId   String?   @unique
   firstName    String
   lastName     String
   email        String    @unique
   phone        String    @unique
-  passwordHash String
+  passwordHash String?
   role         Role
   avatar       String?
   isVerified   Boolean   @default(false)

@@ -1,10 +1,12 @@
 "use client";
 
-import { FormEvent, useState, type InputHTMLAttributes } from "react";
+import { FormEvent, useEffect, useState, type InputHTMLAttributes } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { IconUser, IconWrench } from "@/components/icons";
 import { useLocale } from "@/components/LocaleProvider";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { mapSupabaseAuthError } from "@/lib/supabase/auth-errors";
 
 function Field({
   label,
@@ -18,49 +20,277 @@ function Field({
   );
 }
 
+type RegisterStep = "form" | "verify";
+
+type PendingRegister = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: "customer" | "master";
+};
+
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
-  const { tr } = useLocale();
+  const { tr, locale } = useLocale();
   const next = useSearchParams().get("next") || "";
   const [role, setRole] = useState<"customer" | "master">("customer");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registerStep, setRegisterStep] = useState<RegisterStep>("form");
+  const [pending, setPending] = useState<PendingRegister | null>(null);
+  const [otp, setOtp] = useState("");
+  const [resendSeconds, setResendSeconds] = useState(0);
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    if (resendSeconds <= 0) return;
+    const timer = setTimeout(() => setResendSeconds((value) => value - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendSeconds]);
+
+  async function syncSessionAndRedirect() {
+    const res = await fetch("/api/auth/sync", { method: "POST", credentials: "include" });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || tr("genericError"));
+      return false;
+    }
+    router.push(next || data.redirect || "/dashboard");
+    router.refresh();
+    return true;
+  }
+
+  async function onRegisterSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const form = new FormData(e.currentTarget);
-    const payload =
-      mode === "login"
-        ? { email: form.get("email"), password: form.get("password") }
-        : {
-            firstName: form.get("firstName"),
-            lastName: form.get("lastName"),
-            email: form.get("email"),
-            phone: form.get("phone"),
-            password: form.get("password"),
-            confirmPassword: form.get("confirmPassword"),
-            role,
-          };
 
-    const res = await fetch(`/api/auth/${mode}`, {
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      setError(tr("supabaseNotConfigured"));
+      return;
+    }
+
+    const form = new FormData(e.currentTarget);
+    const payload: PendingRegister = {
+      firstName: String(form.get("firstName") ?? ""),
+      lastName: String(form.get("lastName") ?? ""),
+      email: String(form.get("email") ?? "").trim().toLowerCase(),
+      phone: String(form.get("phone") ?? ""),
+      password: String(form.get("password") ?? ""),
+      role,
+    };
+    const confirmPassword = String(form.get("confirmPassword") ?? "");
+
+    if (payload.password !== confirmPassword) {
+      setLoading(false);
+      setError(tr("genericError"));
+      return;
+    }
+
+    const check = await fetch("/api/auth/register/check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, confirmPassword }),
+    });
+    const checkData = await check.json();
+    if (!check.ok) {
+      setLoading(false);
+      setError(checkData.error || tr("genericError"));
+      return;
+    }
+
+    const supabase = createClient();
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: payload.email,
+      password: payload.password,
+      options: {
+        data: {
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          phone: payload.phone,
+          role: payload.role,
+        },
+      },
+    });
+
+    setLoading(false);
+
+    if (signUpError) {
+      setError(mapSupabaseAuthError(signUpError, locale));
+      if (signUpError.code === "user_already_registered") {
+        setPending(payload);
+        setRegisterStep("verify");
+        setResendSeconds(60);
+      }
+      return;
+    }
+
+    setPending(payload);
+    setRegisterStep("verify");
+    setResendSeconds(60);
+  }
+
+  async function onVerifySubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!pending) return;
+
+    const code = otp.trim();
+    if (!code) {
+      setError(tr("emailCodePlaceholder"));
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    const supabase = createClient();
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: pending.email,
+      token: code,
+      type: "signup",
+    });
+
+    if (verifyError) {
+      setLoading(false);
+      setError(mapSupabaseAuthError(verifyError, locale));
+      return;
+    }
+
+    const ok = await syncSessionAndRedirect();
+    if (!ok) setLoading(false);
+  }
+
+  async function onResendCode() {
+    if (!pending || resendSeconds > 0) return;
+
+    setError("");
+    setLoading(true);
+
+    const supabase = createClient();
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: pending.email,
+    });
+
+    setLoading(false);
+
+    if (resendError) {
+      setError(mapSupabaseAuthError(resendError, locale));
+      return;
+    }
+
+    setResendSeconds(60);
+  }
+
+  async function onLoginSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const form = new FormData(e.currentTarget);
+    const email = String(form.get("email") ?? "").trim().toLowerCase();
+    const password = String(form.get("password") ?? "");
+
+    if (isSupabaseConfigured()) {
+      try {
+        const supabase = createClient();
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (!signInError && data.user) {
+          if (!data.user.email_confirmed_at) {
+            setLoading(false);
+            setError(tr("emailNotVerified"));
+            return;
+          }
+          const ok = await syncSessionAndRedirect();
+          if (!ok) setLoading(false);
+          return;
+        }
+      } catch {
+        // Fall back to legacy login for bcrypt users (e.g. admin seed).
+      }
+    }
+
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
     setLoading(false);
+
     if (!res.ok) {
       setError(data.error || tr("genericError"));
       return;
     }
+
     router.push(next || data.redirect || "/dashboard");
     router.refresh();
   }
 
+  if (mode === "register" && registerStep === "verify" && pending) {
+    return (
+      <form onSubmit={onVerifySubmit} className="card mx-auto w-full max-w-lg space-y-4 p-5 sm:p-6 md:p-8">
+        <div>
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">{tr("checkEmailTitle")}</h1>
+          <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
+            {tr("checkEmailSubtitle", { email: pending.email })}
+          </p>
+        </div>
+
+        <Field
+          label={tr("emailCodeLabel")}
+          name="otp"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          placeholder={tr("emailCodePlaceholder")}
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          required
+        />
+
+        {error && (
+          <p className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700" role="alert">
+            {error}
+          </p>
+        )}
+
+        <button className="btn btn-primary w-full" disabled={loading || !otp.trim()}>
+          {loading ? tr("pleaseWait") : tr("verifyEmail")}
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-ghost w-full"
+          onClick={onResendCode}
+          disabled={loading || resendSeconds > 0}
+        >
+          {resendSeconds > 0 ? tr("resendCodeWait", { seconds: resendSeconds }) : tr("resendCode")}
+        </button>
+
+        <button
+          type="button"
+          className="link mx-auto block text-sm"
+          onClick={() => {
+            setRegisterStep("form");
+            setPending(null);
+            setOtp("");
+            setError("");
+          }}
+        >
+          {tr("backToRegister")}
+        </button>
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={onSubmit} className="card mx-auto w-full max-w-lg space-y-4 p-5 sm:p-6 md:p-8">
+    <form
+      onSubmit={mode === "login" ? onLoginSubmit : onRegisterSubmit}
+      className="card mx-auto w-full max-w-lg space-y-4 p-5 sm:p-6 md:p-8"
+    >
       <div>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">{mode === "login" ? tr("login") : tr("register")}</h1>
         <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
