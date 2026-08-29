@@ -18,6 +18,8 @@ const openSans = Open_Sans({
   variable: "--font-open-sans",
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Усто — Биржаи хизматрасонӣ",
   description: "Устои лозимаро зуд ёбед. Заказ гузоред ё устои мувофиқро мустақим интихоб кунед.",

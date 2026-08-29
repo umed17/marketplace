@@ -5,7 +5,7 @@ import { handleError, jsonError } from "@/lib/api";
 import { rateLimit } from "@/lib/rate-limit";
 import { mapSupabaseAuthError } from "@/lib/supabase/auth-errors";
 import { createAnonClient } from "@/lib/supabase/service";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getSupabaseConfigError, isSupabaseConfigured } from "@/lib/supabase/env";
 import { normalizePhone } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n";
 
@@ -16,12 +16,13 @@ export async function POST(req: NextRequest) {
       return jsonError("Зиёд кӯшиш кардед. Баъдтар такрор кунед.", 429);
     }
 
-    if (!isSupabaseConfigured()) {
-      return jsonError("Тасдиқи email танзим нашудааст. Бо дастгирӣ тамос гиред.", 503);
-    }
-
     const body = await req.json();
     const locale: Locale = body.locale === "ru" ? "ru" : "tg";
+
+    if (!isSupabaseConfigured()) {
+      return jsonError(getSupabaseConfigError(locale) ?? "Тасдиқи email танзим нашудааст.", 503);
+    }
+
     const data = registerSchema.parse(body);
 
     const phone = normalizePhone(data.phone);
