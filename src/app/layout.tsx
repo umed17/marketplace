@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import { SupabasePublicConfig } from "@/components/SupabasePublicConfig";
 
 const poppins = Poppins({
   subsets: ["latin", "latin-ext"],
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tg">
       <body className={`${poppins.variable} ${openSans.variable} antialiased`}>
+        <SupabasePublicConfig />
         <LocaleProvider>
           <Header />
           <main className="min-h-[70vh]">{children}</main>

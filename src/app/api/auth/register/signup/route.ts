@@ -4,7 +4,8 @@ import { registerSchema } from "@/lib/validations";
 import { handleError, jsonError } from "@/lib/api";
 import { rateLimit } from "@/lib/rate-limit";
 import { mapSupabaseAuthError } from "@/lib/supabase/auth-errors";
-import { createAnonClient, isSupabaseServerConfigured } from "@/lib/supabase/service";
+import { createAnonClient } from "@/lib/supabase/service";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { normalizePhone } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n";
 
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
       return jsonError("Зиёд кӯшиш кардед. Баъдтар такрор кунед.", 429);
     }
 
-    if (!isSupabaseServerConfigured()) {
+    if (!isSupabaseConfigured()) {
       return jsonError("Тасдиқи email танзим нашудааст. Бо дастгирӣ тамос гиред.", 503);
     }
 

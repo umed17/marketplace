@@ -1,10 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { readSupabaseEnv } from "@/lib/supabase/env";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 export async function createClient() {
-  const url = readSupabaseEnv("NEXT_PUBLIC_SUPABASE_URL");
-  const key = readSupabaseEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const url = getSupabaseUrl();
+  const key = getSupabaseAnonKey();
   if (!url || !key) {
     throw new Error("Supabase is not configured");
   }

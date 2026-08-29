@@ -6,7 +6,6 @@ import Link from "next/link";
 import { IconUser, IconWrench } from "@/components/icons";
 import { useLocale } from "@/components/LocaleProvider";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { mapSupabaseAuthError } from "@/lib/supabase/auth-errors";
 import { EMAIL_OTP_LENGTH, OtpInput } from "@/components/OtpInput";
 
 function Field({
@@ -68,11 +67,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setLoading(true);
 
     try {
-      if (!isSupabaseConfigured()) {
-        setError(tr("supabaseNotConfigured"));
-        return;
-      }
-
       const form = new FormData(e.currentTarget);
       const payload: PendingRegister = {
         firstName: String(form.get("firstName") ?? ""),
@@ -131,16 +125,17 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setError("");
     setLoading(true);
 
-    const supabase = createClient();
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email: pending.email,
-      token: code,
-      type: "signup",
+    const res = await fetch("/api/auth/register/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email: pending.email, token: code, locale }),
     });
+    const data = await res.json();
 
-    if (verifyError) {
+    if (!res.ok) {
       setLoading(false);
-      setError(mapSupabaseAuthError(verifyError, locale));
+      setError(data.error || tr("genericError"));
       return;
     }
 

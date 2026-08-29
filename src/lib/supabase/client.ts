@@ -1,13 +1,28 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { readSupabaseEnv } from "@/lib/supabase/env";
+import {
+  getSupabaseAnonKey,
+  getSupabaseUrl,
+  isSupabaseConfigured as isServerSupabaseConfigured,
+  readBrowserSupabaseConfig,
+} from "@/lib/supabase/env";
 
 export function isSupabaseConfigured() {
-  return Boolean(readSupabaseEnv("NEXT_PUBLIC_SUPABASE_URL") && readSupabaseEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"));
+  if (typeof window !== "undefined") {
+    const injected = readBrowserSupabaseConfig();
+    if (injected?.url && injected.anonKey) return true;
+  }
+  return isServerSupabaseConfigured();
+}
+
+function resolveSupabaseCredentials() {
+  const injected = typeof window !== "undefined" ? readBrowserSupabaseConfig() : null;
+  const url = injected?.url ?? getSupabaseUrl();
+  const key = injected?.anonKey ?? getSupabaseAnonKey();
+  return { url, key };
 }
 
 export function createClient() {
-  const url = readSupabaseEnv("NEXT_PUBLIC_SUPABASE_URL");
-  const key = readSupabaseEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const { url, key } = resolveSupabaseCredentials();
   if (!url || !key) {
     throw new Error("Supabase is not configured");
   }
