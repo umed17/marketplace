@@ -67,70 +67,86 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setError("");
     setLoading(true);
 
-    if (!isSupabaseConfigured()) {
-      setLoading(false);
-      setError(tr("supabaseNotConfigured"));
-      return;
-    }
+    try {
+      if (!isSupabaseConfigured()) {
+        setError(tr("supabaseNotConfigured"));
+        return;
+      }
 
-    const form = new FormData(e.currentTarget);
-    const payload: PendingRegister = {
-      firstName: String(form.get("firstName") ?? ""),
-      lastName: String(form.get("lastName") ?? ""),
-      email: String(form.get("email") ?? "").trim().toLowerCase(),
-      phone: String(form.get("phone") ?? ""),
-      password: String(form.get("password") ?? ""),
-      role,
-    };
-    const confirmPassword = String(form.get("confirmPassword") ?? "");
+      const form = new FormData(e.currentTarget);
+      const payload: PendingRegister = {
+        firstName: String(form.get("firstName") ?? ""),
+        lastName: String(form.get("lastName") ?? ""),
+        email: String(form.get("email") ?? "").trim().toLowerCase(),
+        phone: String(form.get("phone") ?? ""),
+        password: String(form.get("password") ?? ""),
+        role,
+      };
+      const confirmPassword = String(form.get("confirmPassword") ?? "");
 
-    if (payload.password !== confirmPassword) {
-      setLoading(false);
-      setError(tr("genericError"));
-      return;
-    }
+      if (payload.password !== confirmPassword) {
+        setError(tr("passwordMismatch"));
+        return;
+      }
 
-    const check = await fetch("/api/auth/register/check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...payload, confirmPassword }),
-    });
-    const checkData = await check.json();
-    if (!check.ok) {
-      setLoading(false);
-      setError(checkData.error || tr("genericError"));
-      return;
-    }
+      const check = await fetch("/api/auth/register/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, confirmPassword }),
+      });
 
-    const supabase = createClient();
-    const { error: signUpError } = await supabase.auth.signUp({
-      email: payload.email,
-      password: payload.password,
-      options: {
-        data: {
-          firstName: payload.firstName,
-          lastName: payload.lastName,
-          phone: payload.phone,
-          role: payload.role,
+      let checkData: { error?: string } = {};
+      try {
+        checkData = await check.json();
+      } catch {
+        setError(tr("networkError"));
+        return;
+      }
+
+      if (!check.ok) {
+        setError(checkData.error || tr("genericError"));
+        return;
+      }
+
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: payload.email,
+        password: payload.password,
+        options: {
+          data: {
+            firstName: payload.firstName,
+            lastName: payload.lastName,
+            phone: payload.phone,
+            role: payload.role,
+          },
         },
-      },
-    });
+      });
 
-    setLoading(false);
+      if (signUpError) {
+        setError(mapSupabaseAuthError(signUpError, locale));
+        if (signUpError.code === "user_already_registered" || signUpError.code === "user_already_exists") {
+          setPending(payload);
+          setRegisterStep("verify");
+          setResendSeconds(60);
+        }
+        return;
+      }
 
-    if (signUpError) {
-      setError(mapSupabaseAuthError(signUpError, locale));
-      if (signUpError.code === "user_already_registered") {
+      if (data.user?.identities?.length === 0) {
         setPending(payload);
         setRegisterStep("verify");
         setResendSeconds(60);
+        return;
       }
-      return;
-    }
 
-    setPending(payload);
-    setRegisterStep("verify");
-    setResendSeconds(60);
+      setPending(payload);
+      setRegisterStep("verify");
+      setResendSeconds(60);
+    } catch {
+      setError(tr("networkError"));
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function onVerifySubmit(e: FormEvent<HTMLFormElement>) {

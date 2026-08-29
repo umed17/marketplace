@@ -8,6 +8,8 @@ const messages: Record<Locale, Record<string, string>> = {
     otp_expired: "Рамз қадим шуд. Рамзи нав дархост кунед.",
     otp_disabled: "Тасдиқи email фаъол нест. Бо дастгирӣ тамос гиред.",
     user_already_registered: "Ин email аллакай сабт шудааст. Ворид шавед ё рамзро аз нав фиристед.",
+    user_already_exists: "Ин email аллакай сабт шудааст. Ворид шавед ё рамзро аз нав фиристед.",
+    invalid_api_key: "Танзими Supabase нодуруст аст. Бо дастгирӣ тамос гиред.",
     over_email_send_rate_limit: "Зиёд кӯшиш кардед. Баъдтар такрор кунед.",
     over_request_rate_limit: "Зиёд кӯшиш кардед. Баъдтар такрор кунед.",
     validation_failed: "Маълумот нодуруст аст. Санҷед ва такрор кунед.",
@@ -23,6 +25,8 @@ const messages: Record<Locale, Record<string, string>> = {
     otp_expired: "Код устарел. Запросите новый код.",
     otp_disabled: "Подтверждение email не активно. Свяжитесь с поддержкой.",
     user_already_registered: "Этот email уже зарегистрирован. Войдите или запросите код повторно.",
+    user_already_exists: "Этот email уже зарегистрирован. Войдите или запросите код повторно.",
+    invalid_api_key: "Неверная настройка Supabase. Свяжитесь с поддержкой.",
     over_email_send_rate_limit: "Слишком много попыток. Попробуйте позже.",
     over_request_rate_limit: "Слишком много попыток. Попробуйте позже.",
     validation_failed: "Данные неверны. Проверьте и попробуйте снова.",
@@ -47,6 +51,8 @@ export function mapSupabaseAuthError(error: AuthError | null | undefined, locale
   if (msg.includes("token has expired") || msg.includes("otp expired")) return table.otp_expired;
   if (msg.includes("already registered") || msg.includes("already been registered")) return table.user_already_registered;
   if (msg.includes("rate limit")) return table.over_email_send_rate_limit;
+  if (msg.includes("invalid api key")) return table.invalid_api_key;
+  if (msg.includes("signups not allowed")) return table.signup_disabled;
 
   return table.default;
 }
