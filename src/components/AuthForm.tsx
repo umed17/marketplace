@@ -89,53 +89,22 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         return;
       }
 
-      const check = await fetch("/api/auth/register/check", {
+      const signup = await fetch("/api/auth/register/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, confirmPassword }),
+        body: JSON.stringify({ ...payload, confirmPassword, locale }),
       });
 
-      let checkData: { error?: string } = {};
+      let signupData: { error?: string; ok?: boolean; alreadyRegistered?: boolean } = {};
       try {
-        checkData = await check.json();
+        signupData = await signup.json();
       } catch {
         setError(tr("networkError"));
         return;
       }
 
-      if (!check.ok) {
-        setError(checkData.error || tr("genericError"));
-        return;
-      }
-
-      const supabase = createClient();
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: payload.email,
-        password: payload.password,
-        options: {
-          data: {
-            firstName: payload.firstName,
-            lastName: payload.lastName,
-            phone: payload.phone,
-            role: payload.role,
-          },
-        },
-      });
-
-      if (signUpError) {
-        setError(mapSupabaseAuthError(signUpError, locale));
-        if (signUpError.code === "user_already_registered" || signUpError.code === "user_already_exists") {
-          setPending(payload);
-          setRegisterStep("verify");
-          setResendSeconds(60);
-        }
-        return;
-      }
-
-      if (data.user?.identities?.length === 0) {
-        setPending(payload);
-        setRegisterStep("verify");
-        setResendSeconds(60);
+      if (!signup.ok) {
+        setError(signupData.error || tr("genericError"));
         return;
       }
 
@@ -185,16 +154,17 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setError("");
     setLoading(true);
 
-    const supabase = createClient();
-    const { error: resendError } = await supabase.auth.resend({
-      type: "signup",
-      email: pending.email,
+    const res = await fetch("/api/auth/register/resend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pending.email, locale }),
     });
+    const data = await res.json();
 
     setLoading(false);
 
-    if (resendError) {
-      setError(mapSupabaseAuthError(resendError, locale));
+    if (!res.ok) {
+      setError(data.error || tr("genericError"));
       return;
     }
 

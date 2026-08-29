@@ -17,6 +17,7 @@ const messages: Record<Locale, Record<string, string>> = {
     weak_password: "Парол хеле суст аст. Ҳадди ақал 8 аломат истифода баред.",
     same_password: "Пароли нав бо пароли кӯҳна якхела аст.",
     email_address_invalid: "Email нодуруст аст.",
+    email_send_failed: "Нома фиристода нашуд. Танзими SMTP/Resend-ро дар Supabase санҷед.",
     default: "Хато рӯй дод. Боз такрор кунед.",
   },
   ru: {
@@ -34,6 +35,7 @@ const messages: Record<Locale, Record<string, string>> = {
     weak_password: "Пароль слишком слабый. Используйте минимум 8 символов.",
     same_password: "Новый пароль совпадает со старым.",
     email_address_invalid: "Неверный email.",
+    email_send_failed: "Письмо не отправлено. Проверьте SMTP/Resend в Supabase.",
     default: "Произошла ошибка. Попробуйте снова.",
   },
 };
@@ -53,6 +55,15 @@ export function mapSupabaseAuthError(error: AuthError | null | undefined, locale
   if (msg.includes("rate limit")) return table.over_email_send_rate_limit;
   if (msg.includes("invalid api key")) return table.invalid_api_key;
   if (msg.includes("signups not allowed")) return table.signup_disabled;
+  if (
+    msg.includes("confirmation mail") ||
+    msg.includes("confirmation email") ||
+    msg.includes("error sending") ||
+    msg.includes("smtp") ||
+    msg.includes("gomail")
+  ) {
+    return table.email_send_failed;
+  }
 
   return table.default;
 }
